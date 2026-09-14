@@ -14,13 +14,22 @@ import type { TMonthlyGameResponse } from './types/response/monthly-games-respon
 export class ChesscomService {
 	public constructor(private readonly configService: ConfigService) {}
 
-	public async getGamesByUsername(username: string) {
+	public async getGamesByUsername(
+		username: string,
+		page: number = 1,
+		limit: number = 50
+	) {
 		const url = `${this.configService.getOrThrow<string>('CHESS_COM_PLAYER_GAMES')}${username}/games/archives`
 
 		const cached = this.getCache(url)
 
 		if (cached) {
-			return cached
+			return this.paginateGames(
+				cached.games,
+				page,
+				limit,
+				cached.totalGames
+			)
 		}
 
 		const response = await fetch(url, {
@@ -64,11 +73,36 @@ export class ChesscomService {
 			})
 		)
 
-		const flatGames = games.flat()
+		const flatGames = games
+			.flat()
+			.sort((a, b) => Number(b.end_time) - Number(a.end_time))
 
-		this.setCache(url, flatGames, 1000 * 60 * 10)
+		const totalGames = flatGames.length
 
-		return flatGames
+		this.setCache(url, flatGames, totalGames, 1000 * 60 * 10)
+
+		return this.paginateGames(flatGames, page, limit, totalGames)
+	}
+
+	private paginateGames(
+		games: TGame[],
+		page: number,
+		limit: number,
+		totalGames: number
+	) {
+		const start = (page - 1) * limit
+
+		const end = start + limit
+
+		const paginatedGames = games.slice(start, end)
+
+		return {
+			games: paginatedGames,
+			page,
+			limit,
+			hasNextPage: end < games.length,
+			totalGames
+		}
 	}
 
 	private getCache(key: string) {
@@ -81,12 +115,21 @@ export class ChesscomService {
 			return null
 		}
 
-		return entry.value
+		return {
+			games: entry.games,
+			totalGames: entry.totalGames
+		}
 	}
 
-	private setCache(key: string, value: TGame[], ttl: number) {
+	private setCache(
+		key: string,
+		games: TGame[],
+		totalGames: number,
+		ttl: number
+	) {
 		cacheForArchivedGames.set(key, {
-			value,
+			games,
+			totalGames,
 			expiresAt: Date.now() + ttl
 		})
 	}

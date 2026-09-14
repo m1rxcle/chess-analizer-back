@@ -1,7 +1,8 @@
 import type { TGame } from 'src/chesscom/types/game.type'
 
 type TCacheForArchivedGames = {
-	value: TGame[]
+	games: TGame[]
+	totalGames: number
 	expiresAt: number
 }
 

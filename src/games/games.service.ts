@@ -15,7 +15,7 @@ export class GamesService {
 		const chessComFlatGames =
 			await this.chesscomService.getGamesByUsername(username)
 
-		const game = chessComFlatGames.find(game => game.uuid === gameId)
+		const game = chessComFlatGames.games.find(game => game.uuid === gameId)
 
 		if (!game) {
 			throw new NotFoundException('Game was not found')
