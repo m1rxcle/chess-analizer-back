@@ -11,7 +11,7 @@ import { TPaginateGames } from './types/paginate-games'
 import type { TArchivesMonthByUsernameResponse } from './types/response/archived-months-by-username-response.type'
 import type { TMonthlyGameResponse } from './types/response/monthly-games-response.type'
 
-const nativeFetch = globalThis.fetch.bind(globalThis)
+const nativeFetch: typeof fetch = globalThis.fetch.bind(globalThis)
 const MONTH_FETCH_CONCURRENCY = 3
 
 @Injectable()
@@ -137,9 +137,8 @@ export class ChesscomService {
 		}
 
 		await Promise.all(
-			Array.from(
-				{ length: Math.min(limit, items.length) },
-				() => worker()
+			Array.from({ length: Math.min(limit, items.length) }, () =>
+				worker()
 			)
 		)
 
