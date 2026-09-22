@@ -1,5 +1,8 @@
-import { Injectable } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
+import {
+	Injectable,
+	InternalServerErrorException,
+	Logger
+} from '@nestjs/common'
 import type { GameParamDto } from 'src/common/dto/game-param.dto'
 import { assessmentOfMovementQuality } from 'src/common/utils/assessment-of-movement-quality.utils'
 import { evalLoss } from 'src/common/utils/eval-loss.utils'
@@ -14,13 +17,50 @@ import type { TAnalyzeMove } from './types/analyze-move.type'
 
 @Injectable()
 export class AnalysisService {
+	private readonly logger = new Logger('Analysis')
+
 	public constructor(
-		private readonly configService: ConfigService,
 		private readonly gamesService: GamesService,
 		private readonly stockfishService: StockfishService
 	) {}
 
-	public async analyzeMoves(dto: GameParamDto) {
+	private readonly inflightAnalyses = new Map<
+		string,
+		Promise<TAnalyzeMove[]>
+	>()
+
+	public async analyzeMoves(dto: GameParamDto): Promise<TAnalyzeMove[]> {
+		const key = `${dto.username}:${dto.gameId}`
+		const inflight = this.inflightAnalyses.get(key)
+
+		if (inflight) {
+			this.logger.log(
+				`Эта партия уже считается (${dto.username} / ${dto.gameId}) — жду тот же результат`
+			)
+			return inflight
+		}
+
+		const analysis = this.runAnalyzeMoves(dto)
+			.catch(error => {
+				this.logger.log(
+					`Ошибка анализа партии ${dto.username} / ${dto.gameId}`,
+					error
+				)
+
+				throw new InternalServerErrorException(
+					`Ошибка анализа партии, пожалуйста попробуйте позже...`
+				)
+			})
+			.finally(() => {
+				this.inflightAnalyses.delete(key)
+			})
+
+		this.inflightAnalyses.set(key, analysis)
+
+		return analysis
+	}
+
+	private async runAnalyzeMoves(dto: GameParamDto) {
 		const game = await this.gamesService.getGameFromChessCom(dto)
 
 		const moves = parsePgn(game)

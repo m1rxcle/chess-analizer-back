@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common'
-import { ChesscomService } from 'src/chesscom/chesscom.service'
+import { ChesscomModule } from 'src/chesscom/chesscom.module'
 
 import { GamesController } from './games.controller'
 import { GamesService } from './games.service'
 
 @Module({
+	imports: [ChesscomModule],
 	controllers: [GamesController],
-	providers: [GamesService, ChesscomService],
+	providers: [GamesService],
 	exports: [GamesService]
 })
 export class GamesModule {}

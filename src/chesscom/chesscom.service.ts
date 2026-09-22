@@ -7,32 +7,69 @@ import { ConfigService } from '@nestjs/config'
 import { cacheForArchivedGames } from 'src/common/utils/cache-for-archived-games.utils'
 
 import type { TGame } from './types/game.type'
+import { TPaginateGames } from './types/paginate-games'
 import type { TArchivesMonthByUsernameResponse } from './types/response/archived-months-by-username-response.type'
 import type { TMonthlyGameResponse } from './types/response/monthly-games-response.type'
+
+const nativeFetch = globalThis.fetch.bind(globalThis)
+const MONTH_FETCH_CONCURRENCY = 3
 
 @Injectable()
 export class ChesscomService {
 	public constructor(private readonly configService: ConfigService) {}
+
+	private readonly inflightLoads = new Map<string, Promise<TGame[]>>()
 
 	public async getGamesByUsername(
 		username: string,
 		page: number = 1,
 		limit: number = 50
 	) {
+		const games = await this.getAllGamesByUsername(username)
+
+		return this.paginateGames(games, page, limit, games.length)
+	}
+
+	public async getGameByUsernameAndId(username: string, gameId: string) {
+		const games = await this.getAllGamesByUsername(username)
+
+		const game = games.find(item => item.uuid === gameId)
+
+		if (!game) {
+			throw new NotFoundException(
+				'Игра была не найдена, попробуйте другую'
+			)
+		}
+
+		return game
+	}
+
+	private async getAllGamesByUsername(username: string): Promise<TGame[]> {
 		const url = `${this.configService.getOrThrow<string>('CHESS_COM_PLAYER_GAMES')}${username}/games/archives`
 
 		const cached = this.getCache(url)
 
 		if (cached) {
-			return this.paginateGames(
-				cached.games,
-				page,
-				limit,
-				cached.totalGames
-			)
+			return cached.games
 		}
 
-		const response = await fetch(url, {
+		const inflight = this.inflightLoads.get(url)
+
+		if (inflight) {
+			return inflight
+		}
+
+		const load = this.fetchAllGames(url).finally(() => {
+			this.inflightLoads.delete(url)
+		})
+
+		this.inflightLoads.set(url, load)
+
+		return load
+	}
+
+	private async fetchAllGames(url: string): Promise<TGame[]> {
+		const response = await nativeFetch(url, {
 			method: 'GET'
 		})
 
@@ -53,9 +90,11 @@ export class ChesscomService {
 			throw new NotFoundException('Пользователь не найден')
 		}
 
-		const games = await Promise.all(
-			result.archives.map(async month => {
-				const monthGamesResponse = await fetch(month, {
+		const monthlyGames = await this.mapPool(
+			result.archives,
+			MONTH_FETCH_CONCURRENCY,
+			async month => {
+				const monthGamesResponse = await nativeFetch(month, {
 					method: 'GET'
 				})
 
@@ -70,18 +109,41 @@ export class ChesscomService {
 					(await monthGamesResponse.json()) as TMonthlyGameResponse
 
 				return monthGames.games
-			})
+			}
 		)
 
-		const flatGames = games
+		const flatGames = monthlyGames
 			.flat()
 			.sort((a, b) => Number(b.end_time) - Number(a.end_time))
 
-		const totalGames = flatGames.length
+		this.setCache(url, flatGames, flatGames.length, 1000 * 60 * 10)
 
-		this.setCache(url, flatGames, totalGames, 1000 * 60 * 10)
+		return flatGames
+	}
 
-		return this.paginateGames(flatGames, page, limit, totalGames)
+	private async mapPool<T, R>(
+		items: T[],
+		limit: number,
+		mapper: (item: T) => Promise<R>
+	): Promise<R[]> {
+		const results: R[] = new Array(items.length)
+		let nextIndex = 0
+
+		const worker = async () => {
+			while (nextIndex < items.length) {
+				const currentIndex = nextIndex++
+				results[currentIndex] = await mapper(items[currentIndex])
+			}
+		}
+
+		await Promise.all(
+			Array.from(
+				{ length: Math.min(limit, items.length) },
+				() => worker()
+			)
+		)
+
+		return results
 	}
 
 	private paginateGames(
@@ -89,7 +151,7 @@ export class ChesscomService {
 		page: number,
 		limit: number,
 		totalGames: number
-	) {
+	): TPaginateGames {
 		const start = (page - 1) * limit
 
 		const end = start + limit
