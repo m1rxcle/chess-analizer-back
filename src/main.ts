@@ -29,7 +29,10 @@ async function bootstrap() {
 	)
 
 	app.enableCors({
-		origin: config.getOrThrow<string>('FRONTEND_URL')
+		origin: [
+			config.getOrThrow<string>('FRONTEND_URL'),
+			config.getOrThrow<string>('FRONTEND_DEV_URL')
+		]
 	})
 
 	const docConfig = new DocumentBuilder()
@@ -42,6 +45,6 @@ async function bootstrap() {
 	const documentFactory = () => SwaggerModule.createDocument(app, docConfig)
 	SwaggerModule.setup('api', app, documentFactory)
 
-	await app.listen(config.getOrThrow<number>('BACKEND_PORT'))
+	await app.listen(config.getOrThrow<number>('BACKEND_PORT'), '0.0.0.0')
 }
 bootstrap()
