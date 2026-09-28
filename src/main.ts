@@ -4,7 +4,6 @@ import { NestFactory } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 
 import { AppModule } from './app.module'
-import { ObserveInstrument } from './observe.module'
 
 process.on('unhandledRejection', reason => {
 	console.error('[unhandledRejection]', reason)
@@ -15,9 +14,7 @@ process.on('uncaughtException', error => {
 })
 
 async function bootstrap() {
-	const app = await NestFactory.create(AppModule, {
-		instrument: ObserveInstrument
-	})
+	const app = await NestFactory.create(AppModule)
 	const config = app.get(ConfigService)
 
 	app.useGlobalPipes(
