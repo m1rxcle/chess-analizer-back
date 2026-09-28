@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
-import { ChesscomModule } from 'src/chesscom/chesscom.module'
+
+import { ChesscomModule } from '../chesscom/chesscom.module'
 
 import { GamesController } from './games.controller'
 import { GamesService } from './games.service'

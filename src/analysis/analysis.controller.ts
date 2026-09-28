@@ -4,7 +4,8 @@ import {
 	ApiOkResponse,
 	ApiParam
 } from '@nestjs/swagger'
-import { GameParamDto } from 'src/common/dto/game-param.dto'
+
+import { GameParamDto } from '../common/dto/game-param.dto'
 
 import { AnalysisService } from './analysis.service'
 import { AnalyzeMoveDto } from './dto/analyze-move.dto'

@@ -3,15 +3,16 @@ import {
 	InternalServerErrorException,
 	Logger
 } from '@nestjs/common'
-import type { GameParamDto } from 'src/common/dto/game-param.dto'
-import { assessmentOfMovementQuality } from 'src/common/utils/assessment-of-movement-quality.utils'
-import { evalLoss } from 'src/common/utils/eval-loss.utils'
-import { getWhitePerspectiveEvaluation } from 'src/common/utils/get-white-perspective-evaluation.utils'
-import { normalizeGameScore } from 'src/common/utils/normalize-game-score.util'
-import { GamesService } from 'src/games/games.service'
-import { parsePgn } from 'src/games/parsers/game-pgn.parser'
-import { StockfishService } from 'src/stockfish/stockfish.service'
-import type { TStockfishAnalysis } from 'src/stockfish/types/stockfish-analysis.type'
+
+import type { GameParamDto } from '../common/dto/game-param.dto'
+import { assessmentOfMovementQuality } from '../common/utils/assessment-of-movement-quality.utils'
+import { evalLoss } from '../common/utils/eval-loss.utils'
+import { getWhitePerspectiveEvaluation } from '../common/utils/get-white-perspective-evaluation.utils'
+import { normalizeGameScore } from '../common/utils/normalize-game-score.util'
+import { GamesService } from '../games/games.service'
+import { parsePgn } from '../games/parsers/game-pgn.parser'
+import { StockfishService } from '../stockfish/stockfish.service'
+import type { TStockfishAnalysis } from '../stockfish/types/stockfish-analysis.type'
 
 import type { TAnalyzeMove } from './types/analyze-move.type'
 

@@ -1,7 +1,8 @@
 import { Controller, Get, HttpCode, HttpStatus, Param } from '@nestjs/common'
 import { ApiNotFoundResponse, ApiOkResponse, ApiParam } from '@nestjs/swagger'
-import { GameParamDto } from 'src/common/dto/game-param.dto'
-import { GetGameResponseDto } from 'src/common/dto/get-game.dto'
+
+import { GameParamDto } from '../common/dto/game-param.dto'
+import { GetGameResponseDto } from '../common/dto/get-game.dto'
 
 import { GamesService } from './games.service'
 

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
-import { ChesscomService } from 'src/chesscom/chesscom.service'
-import type { GameParamDto } from 'src/common/dto/game-param.dto'
+
+import { ChesscomService } from '../chesscom/chesscom.service'
+import type { GameParamDto } from '../common/dto/game-param.dto'
 
 @Injectable()
 export class GamesService {

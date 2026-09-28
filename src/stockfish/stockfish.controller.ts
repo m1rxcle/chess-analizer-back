@@ -12,7 +12,8 @@ import {
 	ApiParam,
 	ApiQuery
 } from '@nestjs/swagger'
-import { GameParamDto } from 'src/common/dto/game-param.dto'
+
+import { GameParamDto } from '../common/dto/game-param.dto'
 
 import { StockfishAnalysisDto } from './dto/stockfish-analysis-response.dto'
 import { StockfishService } from './stockfish.service'

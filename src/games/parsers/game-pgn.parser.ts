@@ -1,5 +1,6 @@
 import { Chess } from 'chess.js'
-import type { TGame } from 'src/chesscom/types/game.type'
+
+import type { TGame } from '../../chesscom/types/game.type'
 
 import type { TParsedMove } from './types/parsed-move'
 

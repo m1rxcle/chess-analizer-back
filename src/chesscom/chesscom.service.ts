@@ -4,7 +4,8 @@ import {
 	NotFoundException
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { cacheForArchivedGames } from 'src/common/utils/cache-for-archived-games.utils'
+
+import { cacheForArchivedGames } from '../common/utils/cache-for-archived-games.utils'
 
 import type { TGame } from './types/game.type'
 import { TPaginateGames } from './types/paginate-games'

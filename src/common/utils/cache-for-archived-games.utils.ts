@@ -1,4 +1,4 @@
-import type { TGame } from 'src/chesscom/types/game.type'
+import type { TGame } from '../../chesscom/types/game.type'
 
 type TCacheForArchivedGames = {
 	games: TGame[]
