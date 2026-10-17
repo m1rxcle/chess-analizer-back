@@ -2,7 +2,7 @@
 	"$schema": "https://openapi.vercel.sh/vercel.json",
 	"functions": {
 		"src/main.ts": {
-			"includeFiles": ["node_modules/stockfish/bin/**"]
+			"includeFiles": "node_modules/stockfish/bin/**"
 		}
 	}
 }
