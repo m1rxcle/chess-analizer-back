@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 
 import { AppModule } from './app.module'
+import { IS_DEV_ENV } from './common/utils/is-dev-util'
 
 process.on('unhandledRejection', reason => {
 	console.error('[unhandledRejection]', reason)
@@ -26,7 +27,9 @@ async function bootstrap() {
 	)
 
 	app.enableCors({
-		origin: config.getOrThrow<string>('FRONTEND_URL')
+		origin: config.getOrThrow<string>(
+			IS_DEV_ENV ? 'FRONTEND_DEV_URL' : 'FRONTEND_URL'
+		)
 	})
 
 	const docConfig = new DocumentBuilder()
@@ -41,6 +44,6 @@ async function bootstrap() {
 		useGlobalPrefix: true
 	})
 
-	await await app.listen(process.env.PORT ?? 3000)
+	await await app.listen(process.env.PORT ?? 4000)
 }
 bootstrap()
