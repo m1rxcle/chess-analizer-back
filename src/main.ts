@@ -37,7 +37,9 @@ async function bootstrap() {
 		.build()
 
 	const documentFactory = () => SwaggerModule.createDocument(app, docConfig)
-	SwaggerModule.setup('api', app, documentFactory)
+	SwaggerModule.setup('api', app, documentFactory, {
+		useGlobalPrefix: true
+	})
 
 	await await app.listen(process.env.PORT ?? 3000)
 }
