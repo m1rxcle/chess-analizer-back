@@ -31,9 +31,11 @@ async function bootstrap() {
 	console.log('FRONTEND_URL:', config.get('FRONTEND_URL'))
 
 	app.enableCors({
-		origin: config.getOrThrow<string>(
-			IS_DEV_ENV ? 'FRONTEND_DEV_URL' : 'FRONTEND_URL'
-		)
+		origin: [
+			'http://localhost:3000',
+			'http://192.168.0.11:3000',
+			'https://chess-analizer-front-eight.vercel.app'
+		]
 	})
 
 	const docConfig = new DocumentBuilder()
