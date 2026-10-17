@@ -26,6 +26,10 @@ async function bootstrap() {
 		})
 	)
 
+	console.log('NODE_ENV:', process.env.NODE_ENV)
+	console.log('IS_DEV_ENV:', IS_DEV_ENV)
+	console.log('FRONTEND_URL:', config.get('FRONTEND_URL'))
+
 	app.enableCors({
 		origin: config.getOrThrow<string>(
 			IS_DEV_ENV ? 'FRONTEND_DEV_URL' : 'FRONTEND_URL'
