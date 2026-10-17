@@ -1,5 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
+import { existsSync } from 'fs'
+import { join } from 'path'
 import stockfish from 'stockfish'
 
 import type { GameParamDto } from '../common/dto/game-param.dto'
@@ -277,7 +279,21 @@ export class StockfishService {
 		this.logger.log('Запускаю движок  ·  Stockfish lite-single')
 
 		try {
-			const engine = await stockfish('lite-single')
+			const enginePath = join(
+				process.cwd(),
+				'node_modules',
+				'stockfish',
+				'bin',
+				'stockfish-18-lite-single.js'
+			)
+
+			const wasmPath = enginePath.replace(/\.js$/, '.wasm')
+
+			this.logger.log(`Stockfish JS: ${enginePath}`)
+			this.logger.log(`JS exists: ${existsSync(enginePath)}`)
+			this.logger.log(`WASM exists: ${existsSync(wasmPath)}`)
+
+			const engine = await stockfish(enginePath)
 			await this.configureEngine(engine)
 			this.logger.log('Движок готов  ·  Hash 16 МБ  ·  1 поток')
 			this.logger.log('────────────────────────────────────────')
