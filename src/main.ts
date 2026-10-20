@@ -4,7 +4,7 @@ import { NestFactory } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 
 import { AppModule } from './app.module'
-import { IS_DEV_ENV } from './common/utils/is-dev-util'
+import { isDev } from './common/utils/is-dev-util'
 
 process.on('unhandledRejection', reason => {
 	console.error('[unhandledRejection]', reason)
@@ -26,16 +26,15 @@ async function bootstrap() {
 		})
 	)
 
-	console.log('NODE_ENV:', process.env.NODE_ENV)
-	console.log('IS_DEV_ENV:', IS_DEV_ENV)
-	console.log('FRONTEND_URL:', config.get('FRONTEND_URL'))
+	const allowedOrigins = isDev(config)
+		? [
+				config.getOrThrow<string>('FRONTEND_DEV_URL'),
+				config.getOrThrow<string>('FRONTEND_URL')
+			]
+		: [config.getOrThrow<string>('FRONTEND_URL')]
 
 	app.enableCors({
-		origin: [
-			'http://localhost:3000',
-			'http://192.168.0.11:3000',
-			'https://chess-analizer-front-eight.vercel.app'
-		]
+		origin: allowedOrigins
 	})
 
 	const docConfig = new DocumentBuilder()
